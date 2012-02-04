@@ -302,18 +302,30 @@ Swipe.prototype = {
     var from = this.index;
 
     if (from == to) return; // do nothing if already on requested slide
+    
+    var dist = ( from - to ),
+      direction = dist > 0 ? 1 : -1,
+      rest = [],  // Will hold all slides except the current index
+      i;
+      
+    if(Math.abs(dist) > 1) {
+      direction *= -1;  // looping from first to last slide or last to first slide
+    }
+    
+    for( i = 0; i < this.slides.length; i++ ) {
+      if(i !== from) {
+        rest.push(i);
+      }
+    }
+    // Stack slides on the right or left side depending on direction
+    this._slide(rest,this.width * -direction,0,1);
 
-    var toStack = Math.abs(from-to) - 1,
-        direction = Math.abs(from-to) / (from-to), // 1:right -1:left
-        inBetween = [];
-
-    while (toStack--) inBetween.push( (to > from ? to : from) - toStack - 1 );
-
-    // stack em
-    this._slide(inBetween,this.width * direction,0,1);
-
-    // now slide from and to in the proper direction
-    this._slide([from,to],this.width * direction,this.speed,0);
+    // Need to find a less hacky solution here. Without the delay the target slide is 
+    // animated to it's stack position instead of being moved immediately
+    var s = this;
+    setTimeout(function(){
+      s._slide([from,to],s.width * direction,s.speed,0);
+    }, 0)
 
     this.index = to;
 
